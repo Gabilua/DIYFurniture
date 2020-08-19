@@ -13,10 +13,16 @@ public class Screw : MonoBehaviour
                 if (!GameManager.instance.canMisplace)
                 {
                     if (GetComponentInParent<Piece>().type == other.GetComponent<ScrewHole>().type)
+                    {
                         GetComponentInParent<Piece>().ScrewIn(other.transform, transform);
+                        other.enabled = false;
+                    }
                 }
                 else
+                {
                     GetComponentInParent<Piece>().ScrewIn(other.transform, transform);
+                    other.enabled = false;
+                }
             }
         }
     }

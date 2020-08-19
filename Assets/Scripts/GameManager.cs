@@ -17,16 +17,21 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject[] moveAxis, rotateAxis;
 
     [Header("Configurations")]
-    public int gameState;
-    public int rotationMode, moveMode;
-    public GameObject selectedObject;
     [SerializeField] float moveSpeed;
     public bool canMisplace;
     [Range(1,4)]
     public int difficultyLevel;
+    [SerializeField] float selectionHoldDuration;
+
+    [Header("Stats")]
+    public int gameState;
+    public int rotationMode, moveMode;
+    public GameObject selectedObject;
 
     Touch touch;
     Vector3 lastMousePosition;
+    float selectTimer;
+    bool selecting;
 
     private void Awake()
     {
@@ -38,6 +43,16 @@ public class GameManager : MonoBehaviour
     {
         if (gameState == 1 && selectedObject != null)
             Move();
+
+        if (selecting)
+        {
+            selectTimer += Time.deltaTime;
+
+            if (selectTimer >= selectionHoldDuration)
+            {
+                selecting = false;
+            }
+        }
     }
 
     public void ClickObjects()
@@ -57,14 +72,26 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void PointerDown()
+    {
+        selectTimer = 0;
+        selecting = true;
+    }
+
+    public void PointerUp()
+    {
+        if (selectTimer > selectionHoldDuration)
+            ClickObjects();
+    }
+
     void SelectObject(GameObject obj)
     {
         if (selectedObject != null)
             selectedObject.GetComponentInParent<Piece>().DeselectPiece();
 
-        gameState = 0;
         selectedObject = obj;
         selectedObject.GetComponentInParent<Piece>().SelectPiece();
+        UpdateGameState(1);
     }
 
     void Rotate()
@@ -72,13 +99,13 @@ public class GameManager : MonoBehaviour
         switch (rotationMode)
         {
             case 0:
-                selectedObject.transform.GetChild(0).DOBlendableLocalRotateBy(new Vector3(-90, 0, 0), 0.25f);
+                selectedObject.transform.DOBlendableLocalRotateBy(new Vector3(-90, 0, 0), 0.25f);
                 break;
             case 1:
-                selectedObject.transform.GetChild(0).DOBlendableLocalRotateBy(new Vector3(0, -90, 0), 0.25f);
+                selectedObject.transform.DOBlendableLocalRotateBy(new Vector3(0, -90, 0), 0.25f);
                 break;
             case 2:                
-                selectedObject.transform.GetChild(0).DOBlendableLocalRotateBy(new Vector3(0, 0, 90), 0.25f);
+                selectedObject.transform.DOBlendableLocalRotateBy(new Vector3(0, 0, 90), 0.25f);
                 break;
         }
     }
@@ -141,6 +168,9 @@ public class GameManager : MonoBehaviour
                 rotationIcon.color = stateColors[1];
                 moveIcon.color = stateColors[0];
             }
+
+            UpdaterMoveMode();
+            UpdaterRotationMode();
         }
     }
 

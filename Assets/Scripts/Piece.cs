@@ -56,7 +56,6 @@ public class Piece : MonoBehaviour
         transform.SetParent(receiver);
         transform.localPosition = Vector3.zero;
         DeselectPiece();
-        GameManager.instance.UpdateGameState(0);
         set = true;
     }
     
